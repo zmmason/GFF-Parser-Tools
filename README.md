@@ -1,2 +1,2 @@
 # GFF-Parser-Tools
-Bioinformatic analysis tools (transcriptomics, genomics, proteomics), file conversion, gene expression profiles, FASTA generator, Gene-Ontology, CDS, SNPs, introns, transcripts, GO-terms, Pfam parser, FASTA reader, Molar Extinction, charge, nt-aa composition, Isoelectric point,  Mass Extinction, molecular weight, Codon Composition,  ORF reader,  Reverse Compliment,
+Bioinformatic Analysis Tools (transcriptomics, genomics, proteomics), File Conversion, Gene Expression Profiles, FASTA Generator, Gene-Ontology, SNPs, CDSs/Introns/Transcripts, GO-terms, Pfam parser, FASTA reader, Molar Extinction, Charge, NT-AA Composition, Isoelectric Point,  Mass Extinction, Molecular Weight, Codon Composition,  ORF Reader,  Reverse Compliment,
