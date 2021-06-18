@@ -4,7 +4,7 @@ Bioinformatic Analysis Tools (transcriptomics, genomics, proteomics), File Conve
 # GFF_Parser.py
 This program is designed to take an input .txt file containing significant gene/feature labels and search a reference GFF file for their corresponding parent sequence ID and region index. The genes are then extracted from the provided FASTA file using the parent sequence titles and indexes associated with each gene. The single-line FASTA formatted output file is designed to be used in database searches. NOTE: There are file size caps on many databases such as BLAST. 
 
-Input (commandline): 
+Input (terminal interaction): 
 - Feature List (.txt)
 - Refference GFF file (.GFF/.GFF3)
 - Asscociated refference FASTA file (.fa/.fas/.txt)
