@@ -1,7 +1,8 @@
 # GFF-Parser-Tools (Version 3.2)
 
 Pull target features from your reference FASTA using the associated GFF/GFF3 to create a single-line FASTA file containing your target features.
-Format: >feature-title|parent-seq-name|NT|feature|start:stop
+Format: 
+    >feature-title|parent-seq-name|NT|feature|start:stop
     seq
 
 Bioinformatic Analysis Tools (transcriptomics, genomics, proteomics), File Conversion, Gene Expression Profiles, FASTA Generator, Gene-Ontology, SNPs, CDSs/Introns/Transcripts, GO-terms, Pfam parser, FASTA reader, Molar Extinction, Charge, NT-AA Composition, Isoelectric Point,  Mass Extinction, Molecular Weight, Codon Composition,  ORF Reader,  Reverse Compliment.
