@@ -23,7 +23,7 @@ This program is a library of tools used to analyze genomic sequences:
   - FASTA Reader
   - Molar Extinction
   - Charge
-  - NT-AA Composition 
+  - NT/AA Composition 
   - Theoretical Isoelectric Point  
   - Mass Extinction 
   - Molecular Weight
