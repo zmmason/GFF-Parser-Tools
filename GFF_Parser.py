@@ -35,7 +35,7 @@ class CommandLine:
                         'reference FASTA file using the parent sequence titles and indexes associated with each\n '
                         'target feature.\n '
                         'NOTE: Only handles GFF entries with 1 transcript (t1). Additional transcripts will be ignored\n'
-                        'unless the target feature is a gene. start and stop codons are will not always begin and end\n'
+                        'unless the target feature is a gene. Start and stop codons will not always begin and end\n'
                         'a sequence. Sequences based on GFF locations given.\n',
             epilog='Copyright (C) 2021  Zachary M Mason\n'
                    'This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome\n '
