@@ -1,9 +1,6 @@
 # !/usr/bin/env python3
-# Coastal Resilience Lab
 # Last Update: June 17, 2021
-# Name: Zachary Mason (zmmason@ucsc.edu)
-# Univ: University of California, Santa Cruz
-# Dept: Biomolecular Engineering & Bioinformatics
+# Name: Zachary Mason (zmmason@ucsc.edu, zachmason97.zm@gmail.com)
 
 # Copyright (C) 2021  Zachary M Mason
 
