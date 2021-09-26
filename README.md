@@ -1,4 +1,6 @@
-# GFF-Parser-Tools (Version 3.2)
+# GFF-Parser-Tools (Version 3.3)
+
+UPDATED (9/25/2021): (GFF_Parser) Increased file check parameters and program optimization
 
 Pull target features from your reference FASTA using the associated GFF/GFF3 to create a single-line FASTA file containing your target features.
 
