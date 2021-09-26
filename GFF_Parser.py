@@ -1,5 +1,5 @@
 # !/usr/bin/env python3
-# Last Update: June 17, 2021
+# Last Update: Sept 25, 2021 (Increased file check parameters and program optimization)
 # Name: Zachary Mason (zmmason@ucsc.edu, zachmason97.zm@gmail.com)
 
 # Copyright (C) 2021  Zachary M Mason
@@ -12,13 +12,15 @@
 # License for more details. You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>
 
-import argparse
 from argparse import RawTextHelpFormatter
-import timeit
-import sys
+from Bio import SeqIO
+import argparse
+import time
+import os
 
 
-# python3 GFF_Parser.py -id Gene__ID[6718].txt -gff Mcap_reference_SAB.gff3 -fa Mcap_reference.fa
+
+# python3 GFF_Parser.py -id Gene__ID[7729].txt -gff Mcap_reference_SAB.gff3 -fa Mcap_reference.fa
 
 
 class CommandLine:
@@ -44,10 +46,11 @@ class CommandLine:
             add_help=True,
             prefix_chars='-',
             usage='python3 %(prog)s  [-options]')
-        self.parser.add_argument('-v', '--version', action='version', version='%(prog)s 3.2')
+        self.parser.add_argument('-v', '--version', action='version', version='%(prog)s 3.3')
         self.parser.add_argument('-id', action='store', help='input feature/GeneID text (.txt) file')
         self.parser.add_argument('-gff', action='store', help='input reference GFF (.gff/.gff3) file')
-        self.parser.add_argument('-fa', action='store', help='input reference FASTA (.fa/.fas/.txt) file')
+        self.parser.add_argument('-fa', action='store', help='input reference FASTA (.fa/.fna/.fasta/.ffn/'
+                                                             '.frn/.fas/.txt) file')
         self.parser.add_argument('-i', action='store', help='feature of interest',
                                  choices=['mrna', 'mRNA', 'exon', 'intron',
                                           'cds', 'CDS', 'trna', 'tRNA', 'transcript',
@@ -64,20 +67,20 @@ class CommandLine:
 
 def file_check(feature_List, fnGFF, fnFA, target_feature, correctFile=True):
     """ Checking if appropriate files are given. """
-    validFA = ['.fa', '.fas', '.fasta', '.txt']
+    validFA = ['.fasta', '.fna', '.ffn', '.faa', '.frn', '.fa', '.txt', '.fas']
     validGFF = ['.gff', '.gff3']
     validIDs = ['.txt']
 
     while correctFile:
-        if not feature_List.lower().endswith(tuple(validIDs)):  # file compatibility checks
+        if not os.path.isfile(feature_List) and feature_List.lower().endswith(tuple(validIDs)):  # file compatibility checks
             print("Incompatible CDS/SNPs/gene file format...")
             correctFile = False
             break
-        if not fnGFF.lower().endswith(tuple(validGFF)):
+        if not os.path.isfile(fnGFF) and fnGFF.lower().endswith(tuple(validGFF)):
             print("Incompatible GFF file format...")
             correctFile = False
             break
-        if not fnFA.lower().endswith(tuple(validFA)):
+        if not os.path.isfile(fnFA) and fnFA.lower().endswith(tuple(validFA)):
             print("Incompatible FA file format...")
             correctFile = False
         else:
@@ -103,42 +106,6 @@ def file_check(feature_List, fnGFF, fnFA, target_feature, correctFile=True):
         quit()
 
 
-class FastaReader:
-    """ Define objects to read FastA files. """
-
-    def __init__(self, fname=''):
-        """contructor: saves attribute fname """
-        self.fname = fname
-
-    def do_open(self):
-        """ Handle file opens, allowing STDIN."""
-        if self.fname == '':
-            return sys.stdin
-        else:
-            return open(self.fname)
-
-    def read_fa(self):
-        """ Read an entire FastA record and return the sequence header/sequence"""
-        header = ''
-        sequence = ''
-        with self.do_open() as fileH:
-            header = ''
-            sequence = ''
-            # skip to first fasta header
-            line = fileH.readline()
-            while not line.startswith('>'):
-                line = fileH.readline()
-            header = line[1:].rstrip()
-            for line in fileH:
-                if line.startswith('>'):
-                    yield header, sequence
-                    header = line[1:].rstrip()
-                    sequence = ''
-                else:
-                    sequence += ''.join(line.rstrip().split()).upper()
-        yield header, sequence
-
-
 class Features:
     """
     Searches reference GFF file for each CDS's/intron's/gene's corresponding parent sequence ID and
@@ -147,17 +114,15 @@ class Features:
             target CDS/intron/gene file.
     Output: list of feature specific data corresponding to the target feature/transcript/intron/gene. This includes the
             feature label, parent sequence number (to reference reference FA file), and feature region in parent sequence.
-    COST:   designated in significant functions; M = length of GFF file, N = length of feature's/intron's/gene's list file.
     """
 
-    def __init__(self, fnGFF, gff_type, feature_List, target_feature):
+    def __init__(self, gff_type, feature_List, target_feature):
         """ Constructor: saves data from input files. """
-        self.GFF = fnGFF
         self.gff_type = str(gff_type)
         self.feature_List = feature_List
         self.target_feature = target_feature.lower()
 
-    def gff_parser(self):
+    def gff_parser(self, fnGFF):
         """
         Parse GFF file for feature specific parent sequence ID and index based on significant feature tags.
         Cost = O(MN+N)
@@ -166,7 +131,7 @@ class Features:
         feature_options = ['mrna', 'exon', 'intron', 'cds', 'trna', 'transcript', 'mrna', 'match']
         frame_options = ['.', '-']
         match = {}
-        open_GFF = open(self.GFF)
+        open_GFF = open(fnGFF)
 
         for line in open_GFF:
             if not line.startswith('#'):
@@ -243,11 +208,10 @@ class GeneSearch:
         """
         Parse the parent sequence reference FA file with the feature data (parent ID and feature indexes)
         obtained from the GFF file.
-        Cost = O(MN)
         """
-        myFastaReader = FastaReader(self.FA)
         newFAS = open(nt_name, 'w')
-        for parent_ID, seq in myFastaReader.read_fa():
+        for record in SeqIO.parse(self.FA, 'fasta'):  # biopython to read fasta
+            parent_ID, seq = record.id, record.seq  # fasta header for record
             if parent_ID in self.gffContents:
                 feature_Points = self.gffContents.get(parent_ID)
                 for feature in feature_Points:
@@ -260,11 +224,11 @@ class GeneSearch:
                                                                feature_start,
                                                                feature_stop)
                     if strand == '+':
-                        newFAS.write(">" + feature_title + "\n" + seq[
-                                                                  feature_start + frame - 1:feature_stop + frame].upper() + '\n')
+                        newFAS.write(">" + feature_title + "\n" + str(seq[
+                                                                  feature_start + frame - 1:feature_stop + frame]).upper() + '\n')
                     elif strand == '-':
                         newFAS.write(">" + feature_title + "\n" + reverse_comp_strand(
-                            seq[feature_start - frame - 1:feature_stop - frame]) + '\n')
+                            str(seq[feature_start - frame - 1:feature_stop - frame])) + '\n')
 
         newFAS.close()
 
@@ -276,7 +240,6 @@ def main(command=None):
     containing target features. The files are designed to be used in database searches such as BLAST or HMMER.
     Output: Nucleotide fasta containing all features within each significant feature <NT_FASTA.fa>
             *Nucleotide fasta seq titles: feature-title|parent-seq-name|NT|feature|start:stop,
-    COST: O(MN+N) + O(MN)
     """
 
     if command is None:
@@ -284,40 +247,37 @@ def main(command=None):
     else:
         my_command = CommandLine(command)  # interpret the list passed from the caller of main
 
-    start = timeit.default_timer()
+    start = time.time()  # runtime
+    spacer = '-' * 65
 
-    print('CHECKING FILE COMPATIBILITY...')
+    print(spacer + '\nCHECKING FILE COMPATIBILITY...')
     feature_list, gff_type = file_check(my_command.args.id, my_command.args.gff, my_command.args.fa,
                                         my_command.args.i)  # file check
-    print('---FILE COMPATIBILITY CHECK: PASSED---')
+    print('FILE COMPATIBILITY CHECK: PASSED')
 
-    print('SEARCHING {} FEATURES FOR CORRESPONDING SEQUENCE LOCATION...'.format(len(feature_list)))
-    my_feature = Features(my_command.args.gff, gff_type, feature_list, my_command.args.i)
-    gffContents, parent_count, match_count = my_feature.gff_parser()
+    print(spacer + '\nSEARCHING {} FEATURES FOR CORRESPONDING SEQUENCE LOCATION...'.format(len(feature_list)))
+    my_feature = Features(gff_type, feature_list, my_command.args.i)
+    gffContents, parent_count, match_count = my_feature.gff_parser(my_command.args.gff)
 
     if len(feature_list) - match_count >= 0:
         unmatched = len(feature_list) - match_count
     else:
         unmatched = 0
 
-    print("---NUMBER OF {}s MATCHED: {}---\n---NUMBER OF PARENT SEQUENCES: {}---\n---NUMBER OF UNMATCHED FEATURES {}---"
+    print(spacer + "\nNUMBER OF {}s MATCHED: {}\nNUMBER OF PARENT SEQUENCES: {}\nNUMBER OF UNMATCHED FEATURES {}"
           .format(my_command.args.i.upper(), match_count, parent_count, unmatched))
 
     if match_count == 0:
-        stop = timeit.default_timer()
         print('NO DATA...')
-        print('####################################################\nRun Time: {}'
-              '\n####################################################'.format(stop - start))
+        print(spacer + '\nRun Time: {}\n'.format((time.time()-start)) + spacer)
         quit()
 
-    print('GENERATING NUCLEOTIDE FASTA FILE...')
+    print(spacer + '\nGENERATING NUCLEOTIDE FASTA FILE...')
     myGene = GeneSearch(my_command.args.fa, gffContents, my_command.args.i)
     myGene.gen_fasta(my_command.args.out)
-    print('---NT FASTA COMPLETE: "' + my_command.args.out + '"---')
+    print('NT FASTA COMPLETE: "' + my_command.args.out)
 
-    stop = timeit.default_timer()
-    print('####################################################\nRun Time: {}'
-          '\n####################################################'.format(stop - start))
+    print(spacer + '\nRuntime: {} seconds\n'.format(time.time()-start) + spacer)
 
 
 if __name__ == "__main__":
