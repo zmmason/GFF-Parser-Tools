@@ -264,7 +264,7 @@ def main(command=None):
     else:
         unmatched = 0
 
-    print(spacer + "\nNUMBER OF {}s MATCHED: {}\nNUMBER OF PARENT SEQUENCES: {}\nNUMBER OF UNMATCHED FEATURES {}"
+    print(spacer + "\nNUMBER OF {}s MATCHED: {}\nNUMBER OF PARENT SEQUENCES: {}\nNUMBER OF UNMATCHED FEATURES: {}"
           .format(my_command.args.i.upper(), match_count, parent_count, unmatched))
 
     if match_count == 0:
